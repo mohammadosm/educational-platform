@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Platform with Lesson Explanation</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        form {
+            width: 60%;
+            margin: auto;
+            background-color: #f0f0f0;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+        }
+        form input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        form button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+        form button:hover {
+            background-color: #0056b3;
+        }
+        textarea {
+            width: 80%;
+            height: 200px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+        .lesson-section {
+            margin-top: 50px;
+            text-align: left;
+        }
+        .lesson-content {
+            padding: 20px;
+            background-color: #f0f0f0;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+    <div id="studentFormPage">
+        <h1>بلاتفورم تعليمية مع شرح الدروس</h1>
+
+        <!-- Student registration form -->
+        <form id="studentForm">
+            <h2>تسجيل الطالب</h2>
+            <input type="text" id="studentName" placeholder="الاسم الكامل"><br>
+            <input type="email" id="studentEmail" placeholder="البريد الإلكتروني"><br>
+            <input type="tel" id="studentPhone" placeholder="رقم الهاتف"><br>
+            <button type="button" onclick="proceedToLessons()">التالي</button>
+        </form>
+    </div>
+
+    <div id="lessonsPage" style="display: none;">
+        <!-- Textarea for lesson input -->
+        <textarea id="textArea" placeholder="أدخل النص للحفظ..."></textarea><br>
+
+        <!-- Button to save lesson -->
+        <button onclick="saveLesson()">حفظ الدرس</button>
+
+        <!-- Dropdown to select lesson -->
+        <select id="lessonSelect" onchange="loadLesson()">
+            <option value="">اختر درسًا...</option>
+            <option value="lesson1">الدرس 1: مقدمة في الجبر</option>
+            <option value="lesson2">الدرس 2: حل المعادلات</option>
+            <option value="lesson3">الدرس 3: الدوال والرسوم البيانية</option>
+        </select>
+
+        <!-- Section to display lesson content -->
+        <div class="lesson-section">
+            <h2>شرح الدرس</h2>
+            <div class="lesson-content" id="lessonContent">
+                اختر درسًا لعرض محتواه.
+            </div>
+        </div>
+
+        <!-- Button to open saved file -->
+        <button onclick="openSavedFile()">فتح الملف المحفوظ</button>
+
+        <!-- Form for user query -->
+        <form>
+            <input type="text" id="userQuery" placeholder="أدخل سؤالك...">
+            <button type="button" onclick="handleQuery()">اسأل</button>
+        </form>
+
+        <!-- Display area for the answer -->
+        <div id="answer"></div>
+    </div>
+
+    <!-- Script to handle student registration, lesson saving, loading, and Dialogflow integration -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Object to store lessons
+        const lessons = {
+            lesson1: "الدرس 1: مقدمة في الجبر\n\nالجبر هو فرع من الرياضيات يستخدم الأحرف والرموز لتمثيل الأعداد والكميات في الصيغ والمعادلات.",
+            lesson2: "الدرس 2: حل المعادلات\n\nالمعادلات هي عبارات رياضية تؤكد تساوي اثنين من التعبيرات. حل معادلة ينطوي على إيجاد القيمة أو القيم التي تجعل المعادلة صحيحة.",
+            lesson3: "الدرس 3: الدوال والرسوم البيانية\n\nالدوال تصف العلاقات بين المتغيرات. الرسوم البيانية تمثل بصريًا الدوال، وتظهر كيفية تأثير متغير على آخر."
+        };
+
+        // Function to proceed to lessons page after student registration
+        function proceedToLessons() {
+            const studentName = document.getElementById('studentName').value;
+            const studentEmail = document.getElementById('studentEmail').value;
+            const studentPhone = document.getElementById('studentPhone').value;
+            if (studentName && studentEmail && studentPhone) {
+                document.getElementById('studentFormPage').style.display = 'none';
+                document.getElementById('lessonsPage').style.display = 'block';
+            } else {
+                alert('الرجاء إكمال جميع البيانات للمتابعة.');
+            }
+        }
+
+        // Function to save lesson
+        function saveLesson() {
+            const lessonId = 'customLesson';
+            const lessonText = document.getElementById('textArea').value;
+            lessons[lessonId] = lessonText;
+            alert('تم حفظ الدرس بنجاح!');
+        }
+
+        // Function to load selected lesson
+        function loadLesson() {
+            const selectedLesson = document.getElementById('lessonSelect').value;
+            const lessonContent = document.getElementById('lessonContent');
+            lessonContent.textContent = lessons[selectedLesson];
+        }
+
+        // Function to open saved file
+        function openSavedFile() {
+            const lessonId = 'customLesson';
+            const textToSave = lessons[lessonId];
+            const blob = new Blob([textToSave], { type: 'text/plain' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'mySavedLesson.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        // Function to handle user query using Dialogflow API
+        async function handleQuery() {
+            const query = document.getElementById('userQuery').value;
+            const sessionId = Math.random().toString(36).substring(7); // Generate random session ID
+
+            const apiUrl = 'https://api.dialogflow.com/v1/query?v=20150910';
+            const accessToken = 'sk-svcacct-A9MvK5BLNN66yU09PYkWT3BlbkFJINjovJ4pJqcDhgx5XQyv'; // Replace with your Dialogflow access token
+
+            try {
+                const response = await axios.post(apiUrl, {
+                    query: query,
+                    lang: 'en', // Language of the query
+                    sessionId: sessionId,
+                    timezone: 'America/New_York', // Timezone for context
+                    accessToken: accessToken
+                });
+
+                const responseData = response.data;
+                const answer = responseData.result.fulfillment.speech;
+                
+                // Display the answer to the user
+                document.getElementById('answer').textContent = answer;
+            } catch (error) {
+                console.error('Error fetching response from Dialogflow:', error);
+            }
+        }
+    </script>
+</body>
+</html>
